@@ -64,6 +64,12 @@
   .wa-send{
     width:38px; height:38px; border-radius:50%; background:var(--teal); border:none; color:#fff; font-size:16px; cursor:pointer;
   }
+  .wa-typing-dots{ display:flex; gap:4px; padding:5px 3px; }
+  .wa-typing-dots span{ width:6px; height:6px; border-radius:50%; background:#9FC9C0; animation: waBlink 1.2s infinite ease-in-out; }
+  .wa-typing-dots span:nth-child(2){ animation-delay:.2s; }
+  .wa-typing-dots span:nth-child(3){ animation-delay:.4s; }
+  @keyframes waBlink{ 0%,80%,100%{opacity:.25;} 40%{opacity:1;} }
+
   .wa-chips{ padding:8px 10px 0; display:flex; flex-wrap:wrap; gap:6px; }
   .wa-chip{
     background:#2A3942; color:#D7E4E0; border:1px solid #3A4A52; border-radius:14px; padding:6px 10px;
@@ -168,8 +174,8 @@
   <!-- Odoo-style AI assistant panel -->
   <div class="panel">
     <div class="panel-card">
-      <div class="panel-head"><span class="dot"></span><span class="panel-title">AI Order Assistant — internal, not visible to customer</span></div>
-      <div class="ai-line placeholder" id="aiLine">Send a WhatsApp message on the left — the AI will read it and draft a Sales Order here.</div>
+      <div class="panel-head"><span class="dot"></span><span class="panel-title">AI Order Assistant — draft details (internal only)</span></div>
+      <div class="ai-line placeholder" id="aiLine">Send a WhatsApp message on the left. Order-related messages get drafted here for review; general questions are answered straight back to the customer.</div>
     </div>
 
     <div class="draft-card">
@@ -219,6 +225,8 @@ const PRESETS = [
   { label: "Qty change", text: "Actually change the chicken boneless leg to 16kg instead of 12kg" },
   { label: "Cancel item", text: "Please remove the lamb rack from the order" },
   { label: "Cancel whole order", text: "Sorry, please cancel the whole order" },
+  { label: "Ask availability", text: "What's available today and how much is the chicken wing?" },
+  { label: "Ask recommendation", text: "I'm planning a Korean BBQ menu, what do you recommend?" },
 ];
 
 let currentDraft = null;
@@ -244,6 +252,17 @@ function escapeHtml(s) {
   return s.replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 }
 
+function addTypingBubble() {
+  const thread = document.getElementById('waThread');
+  const div = document.createElement('div');
+  div.className = 'wa-bubble wa-out';
+  div.id = 'waTyping';
+  div.innerHTML = '<div class="wa-typing-dots"><span></span><span></span><span></span></div>';
+  thread.appendChild(div);
+  thread.scrollTop = thread.scrollHeight;
+}
+function removeTypingBubble() { document.getElementById('waTyping')?.remove(); }
+
 function sendPreset(i) {
   document.getElementById('waInput').value = PRESETS[i].text;
   sendMessage();
@@ -256,7 +275,7 @@ async function sendMessage() {
   if (!text) return;
   inp.value = '';
   addBubble('customer', text);
-  setAiLine('Reading the message…', true);
+  addTypingBubble();
   isLoading = true;
 
   try {
@@ -270,12 +289,20 @@ async function sendMessage() {
       throw new Error(e.error || `API error ${res.status}`);
     }
     const data = await res.json();
-    setAiLine(data.reply || 'Drafted.', false);
-    if (data.draft) {
+    removeTypingBubble();
+    addBubble('business', data.customer_reply || 'Got it, thanks!');
+
+    if (data.type === 'order' && data.draft) {
       currentDraft = data.draft;
       renderDraft(currentDraft);
+      setAiLine(data.internal_note || 'Draft updated — see the card below.', false);
+    } else {
+      const note = data.internal_note ? ` (${data.internal_note})` : '';
+      setAiLine(`💬 General enquiry — answered directly in WhatsApp, no order created.${note}`, false);
     }
   } catch (err) {
+    removeTypingBubble();
+    addBubble('business', "Sorry, we're having a connection issue on our end — please try again shortly.");
     setAiLine(`⚠ Connection error: ${err.message}`, false);
   }
   isLoading = false;
@@ -340,7 +367,14 @@ function confirmDraft() {
   badge.textContent = 'Confirmed — stock reserved';
   document.getElementById('confirmBtn').disabled = true;
   document.getElementById('confirmBtn').textContent = '✅ Confirmed';
-  addBubble('system', '✅ Order confirmed internally — delivery scheduled.');
+
+  const intent = currentDraft?.intent;
+  const msg = {
+    cancel_item: '✅ Done — we\'ve updated your order and removed that item.',
+    qty_change: '✅ Confirmed — your order has been updated with the new quantity.',
+    add_on: '✅ Confirmed — the extra item has been added to your order.',
+  }[intent] || '✅ Order confirmed — delivery has been scheduled.';
+  addBubble('business', msg);
 }
 
 function editDraft() {
@@ -356,7 +390,7 @@ function resetDemo() {
   document.getElementById('soTitle').textContent = 'No active draft';
   document.getElementById('statusBadge').className = 'status-badge status-empty';
   document.getElementById('statusBadge').textContent = 'No draft';
-  setAiLine('Send a WhatsApp message on the left — the AI will read it and draft a Sales Order here.', true);
+  setAiLine('Send a WhatsApp message on the left. Order-related messages get drafted here for review; general questions are answered straight back to the customer.', true);
 }
 </script>
 

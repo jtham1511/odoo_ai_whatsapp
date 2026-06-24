@@ -1,3 +1,7 @@
 {
-  "type": "module"
+  "name": "newdeli-whatsapp-ai-demo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "New Deli Food Trading — WhatsApp AI draft-order concept demo. Synthetic data only."
 }

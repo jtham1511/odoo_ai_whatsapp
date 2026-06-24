@@ -4,17 +4,23 @@
     "generatedFor": "New Deli Food Trading — QO-2026-026-R2 AI demo"
   },
   "products": [
-    { "sku": "BFSHK-CTN", "name": "Beef Shank Full Carton", "uom": ["carton"], "notes": "1 carton = 30kg" },
-    { "sku": "BFSHK-LOOSE", "name": "Beef Shank Loose", "uom": ["kg"], "notes": "Break-bulk from BFSHK-CTN" },
-    { "sku": "CHKN-BL", "name": "Chicken Boneless Leg", "uom": ["kg"] },
-    { "sku": "CHKN-WING", "name": "Chicken Mid-Joint Wing", "uom": ["kg", "carton"] },
-    { "sku": "LAMB-RACK", "name": "Lamb Rack", "uom": ["kg"] },
-    { "sku": "PORK-BELLY", "name": "Pork Belly Skin-on", "uom": ["kg", "carton"] }
+    { "sku": "BFSHK-CTN", "name": "Beef Shank Full Carton", "uom": ["carton"], "approxPrice": "$285/carton", "notes": "1 carton = 30kg, unopened", "goodFor": "Bulk buyers and restaurants who break it down themselves" },
+    { "sku": "BFSHK-LOOSE", "name": "Beef Shank Loose", "uom": ["kg"], "approxPrice": "$10.80/kg", "notes": "Break-bulk from BFSHK-CTN", "goodFor": "Smaller, exact-weight orders" },
+    { "sku": "CHKN-BL", "name": "Chicken Boneless Leg", "uom": ["kg"], "approxPrice": "$7.20/kg", "goodFor": "Caterers, fast-turnover kitchens" },
+    { "sku": "CHKN-WING", "name": "Chicken Mid-Joint Wing", "uom": ["kg", "carton"], "approxPrice": "$6.50/kg", "goodFor": "Grilling, fried wing dishes" },
+    { "sku": "LAMB-RACK", "name": "Lamb Rack", "uom": ["kg"], "approxPrice": "$24.00/kg", "goodFor": "Fine-dining and Western restaurants" },
+    { "sku": "PORK-BELLY", "name": "Pork Belly Skin-on", "uom": ["kg", "carton"], "approxPrice": "$11.50/kg", "goodFor": "Roasting, char siew, braised dishes" }
   ],
   "customers": [
     { "id": "C-101", "name": "Golden Dragon Restaurant" },
     { "id": "C-102", "name": "Sunrise Catering Pte Ltd" },
     { "id": "C-103", "name": "Marina Bay F&B Holdings" },
     { "id": "C-104", "name": "Tiong Bahru Wet Market Stall 12" }
+  ],
+  "faq": [
+    { "q": "What are your delivery cutoff times?", "a": "Orders before 4am SGT are delivered the same day. Orders any other time are delivered the next day. Saturday orders deliver the following Monday (or next working day on a public holiday)." },
+    { "q": "Can I buy in small quantities?", "a": "Yes — most items are available loose by the kg as well as by the full carton." },
+    { "q": "What are your payment terms?", "a": "Registered trade customers are on 14-day invoicing. New customers may be asked for upfront payment on their first order." },
+    { "q": "Can I change or cancel an order after sending it?", "a": "Yes, as long as it hasn't been picked or packed yet. Cancelling a whole order needs a quick sign-off from our team; cancelling or changing individual items is usually instant." }
   ]
 }
