@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Deli — WhatsApp AI Draft Order (Concept Demo)</title>
+<style>
+  :root{
+    --navy:#1B2430; --navy2:#26323F; --teal:#0F6E68; --teal-tint:#E8F2F1;
+    --copper:#D97A37; --copper-tint:#FBEEE2; --muted:#5B6470; --line:#E2E5E8;
+    --wa-bg:#0B141A; --wa-header:#1F2C34; --wa-in:#1F2C34; --wa-out:#005C4B; --wa-panel:#0B141A;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family: Calibri, "Segoe UI", Arial, sans-serif; background:#F4F6F7; color:var(--navy);
+  }
+  .topbar{
+    background:var(--navy); color:#fff; padding:14px 24px; display:flex; align-items:center; justify-content:space-between;
+  }
+  .topbar h1{ font-size:16px; margin:0; font-weight:700; letter-spacing:.3px;}
+  .topbar .tag{ color:#C7D1D6; font-size:12px; }
+  .reset-btn{
+    background:var(--navy2); color:#fff; border:1px solid #3A4756; border-radius:6px; padding:7px 12px;
+    font-size:12px; cursor:pointer;
+  }
+  .reset-btn:hover{ background:#33414F; }
+
+  .wrap{ display:flex; gap:20px; padding:22px; max-width:1280px; margin:0 auto; align-items:flex-start; }
+
+  /* ---------- WhatsApp phone mock ---------- */
+  .phone{
+    width:340px; flex:0 0 340px; background:#000; border-radius:34px; padding:10px;
+    box-shadow:0 12px 30px rgba(0,0,0,.25);
+  }
+  .phone-screen{
+    background:var(--wa-bg); border-radius:24px; overflow:hidden; height:620px; display:flex; flex-direction:column;
+  }
+  .wa-header{
+    background:var(--wa-header); color:#fff; padding:14px 16px; display:flex; align-items:center; gap:10px;
+  }
+  .wa-avatar{
+    width:34px; height:34px; border-radius:50%; background:var(--teal); display:flex; align-items:center;
+    justify-content:center; font-weight:700; font-size:13px;
+  }
+  .wa-name{ font-size:14px; font-weight:600; }
+  .wa-sub{ font-size:11px; color:#8BA59A; }
+  .wa-thread{ flex:1; overflow-y:auto; padding:14px 10px; background:
+    linear-gradient(var(--wa-bg), var(--wa-bg));
+  }
+  .wa-bubble{
+    max-width:80%; padding:8px 10px; border-radius:9px; font-size:13.5px; line-height:1.35; margin-bottom:8px;
+    position:relative;
+  }
+  .wa-in{ background:var(--wa-in); color:#E9EDEF; border-top-left-radius:2px; }
+  .wa-out{ background:var(--wa-out); color:#E9EDEF; margin-left:auto; border-top-right-radius:2px; }
+  .wa-time{ font-size:10px; color:#8BA59A; margin-top:2px; text-align:right; }
+  .wa-inputbar{
+    display:flex; gap:8px; padding:10px; background:var(--wa-header);
+  }
+  .wa-inputbar input{
+    flex:1; border:none; border-radius:20px; padding:10px 14px; font-size:13px; background:#2A3942; color:#fff;
+  }
+  .wa-inputbar input::placeholder{ color:#8BA59A; }
+  .wa-send{
+    width:38px; height:38px; border-radius:50%; background:var(--teal); border:none; color:#fff; font-size:16px; cursor:pointer;
+  }
+  .wa-chips{ padding:8px 10px 0; display:flex; flex-wrap:wrap; gap:6px; }
+  .wa-chip{
+    background:#2A3942; color:#D7E4E0; border:1px solid #3A4A52; border-radius:14px; padding:6px 10px;
+    font-size:11px; cursor:pointer;
+  }
+  .wa-chip:hover{ background:#33444D; }
+
+  /* ---------- Odoo-style assistant panel ---------- */
+  .panel{
+    flex:1; min-width:0; display:flex; flex-direction:column; gap:14px;
+  }
+  .panel-card{
+    background:#fff; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.06); padding:18px 20px;
+  }
+  .panel-head{ display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+  .panel-head .dot{ width:9px; height:9px; border-radius:50%; background:var(--teal); }
+  .panel-title{ font-size:13px; font-weight:700; color:var(--navy); letter-spacing:.3px; text-transform:uppercase; }
+  .ai-line{
+    font-size:14px; color:var(--navy); margin-top:8px; line-height:1.45; min-height:20px;
+  }
+  .ai-line.placeholder{ color:#9AA6AC; font-style:italic; }
+
+  .draft-card{ background:#fff; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.06); padding:0; overflow:hidden; }
+  .draft-top{
+    background:var(--navy); color:#fff; padding:14px 20px; display:flex; align-items:center; justify-content:space-between;
+  }
+  .draft-top .label{ font-size:12px; color:#9AA6AC; letter-spacing:.4px; text-transform:uppercase; }
+  .draft-top .so-title{ font-size:15px; font-weight:700; margin-top:2px; }
+  .status-badge{
+    font-size:11px; font-weight:700; padding:5px 10px; border-radius:20px; letter-spacing:.3px; white-space:nowrap;
+  }
+  .status-draft{ background:var(--copper-tint); color:var(--copper); }
+  .status-confirmed{ background:#DCF2E9; color:#0F6E68; }
+  .status-review{ background:#FBEEE2; color:#B5541D; }
+  .status-approval{ background:#FBE2E2; color:#B53A3A; }
+  .status-empty{ background:#EEF0F1; color:#9AA6AC; }
+
+  .draft-body{ padding:20px; }
+  .field-row{ display:flex; gap:24px; margin-bottom:14px; flex-wrap:wrap; }
+  .field{ min-width:140px; }
+  .field .k{ font-size:10.5px; color:#9AA6AC; text-transform:uppercase; letter-spacing:.4px; margin-bottom:3px; }
+  .field .v{ font-size:14px; font-weight:600; color:var(--navy); }
+  .conf-bar-track{ width:90px; height:6px; background:#EDEFF0; border-radius:4px; overflow:hidden; margin-top:5px;}
+  .conf-bar-fill{ height:100%; background:var(--teal); border-radius:4px; transition:width .3s ease; }
+
+  table.items{ width:100%; border-collapse:collapse; margin-top:6px; font-size:13px; }
+  table.items th{ text-align:left; font-size:10.5px; color:#9AA6AC; text-transform:uppercase; letter-spacing:.3px;
+    border-bottom:1px solid var(--line); padding:6px 8px 8px 0; }
+  table.items td{ padding:9px 8px 9px 0; border-bottom:1px solid #F1F2F3; color:var(--navy); }
+  table.items tr.cancelled td{ color:#B0B7BC; text-decoration:line-through; }
+  .empty-state{ color:#9AA6AC; font-size:13px; padding:20px 0; text-align:center; }
+
+  .flags{ display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+  .flag{ font-size:11px; padding:5px 9px; border-radius:6px; font-weight:600; }
+  .flag-review{ background:var(--copper-tint); color:#B5541D; }
+  .flag-approval{ background:#FBE2E2; color:#B53A3A; }
+  .flag-sameday{ background:var(--teal-tint); color:var(--teal); }
+
+  .note{ font-size:12px; color:var(--muted); margin-top:14px; border-top:1px solid var(--line); padding-top:12px; }
+
+  .actions{ display:flex; gap:10px; padding:0 20px 20px; }
+  .btn{ border:none; border-radius:7px; padding:10px 16px; font-size:13px; font-weight:700; cursor:pointer; flex:1; }
+  .btn-confirm{ background:var(--teal); color:#fff; }
+  .btn-confirm:disabled{ background:#CFE3E1; color:#7FA39E; cursor:not-allowed; }
+  .btn-approve{ background:#B53A3A; color:#fff; }
+  .btn-edit{ background:#fff; color:var(--navy); border:1px solid var(--line); }
+
+  .footer-note{ font-size:11.5px; color:#9AA6AC; text-align:center; padding:6px 0 0; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>New Deli Food Trading — WhatsApp AI Draft-Order Concept Demo</h1>
+    <div class="tag">Synthetic demo data · powered by Claude · draft-only, human confirms</div>
+  </div>
+  <button class="reset-btn" onclick="resetDemo()">↺ Reset demo</button>
+</div>
+
+<div class="wrap">
+
+  <!-- WhatsApp phone mock -->
+  <div class="phone">
+    <div class="phone-screen">
+      <div class="wa-header">
+        <div class="wa-avatar">ND</div>
+        <div>
+          <div class="wa-name">New Deli Food Trading</div>
+          <div class="wa-sub">Order line · usually replies instantly</div>
+        </div>
+      </div>
+      <div class="wa-thread" id="waThread"></div>
+      <div class="wa-chips" id="waChips"></div>
+      <div class="wa-inputbar">
+        <input id="waInput" type="text" placeholder="Type a customer message…" onkeydown="if(event.key==='Enter')sendMessage()">
+        <button class="wa-send" onclick="sendMessage()">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Odoo-style AI assistant panel -->
+  <div class="panel">
+    <div class="panel-card">
+      <div class="panel-head"><span class="dot"></span><span class="panel-title">AI Order Assistant — internal, not visible to customer</span></div>
+      <div class="ai-line placeholder" id="aiLine">Send a WhatsApp message on the left — the AI will read it and draft a Sales Order here.</div>
+    </div>
+
+    <div class="draft-card">
+      <div class="draft-top">
+        <div>
+          <div class="label">Odoo · Draft Sales Order</div>
+          <div class="so-title" id="soTitle">No active draft</div>
+        </div>
+        <div class="status-badge status-empty" id="statusBadge">No draft</div>
+      </div>
+      <div class="draft-body">
+        <div id="draftEmpty" class="empty-state">Nothing drafted yet.</div>
+        <div id="draftContent" style="display:none">
+          <div class="field-row">
+            <div class="field"><div class="k">Customer</div><div class="v" id="fCustomer">—</div></div>
+            <div class="field"><div class="k">Delivery date</div><div class="v" id="fDate">—</div></div>
+            <div class="field"><div class="k">Intent detected</div><div class="v" id="fIntent">—</div></div>
+            <div class="field">
+              <div class="k">AI confidence</div>
+              <div class="v" id="fConf">—</div>
+              <div class="conf-bar-track"><div class="conf-bar-fill" id="fConfBar" style="width:0%"></div></div>
+            </div>
+          </div>
+          <table class="items">
+            <thead><tr><th>Item</th><th>Qty</th><th>Unit</th><th>Status</th></tr></thead>
+            <tbody id="itemsBody"></tbody>
+          </table>
+          <div class="flags" id="flagsRow"></div>
+          <div class="note" id="noteRow" style="display:none"></div>
+        </div>
+      </div>
+      <div class="actions" id="actionsRow" style="display:none">
+        <button class="btn btn-edit" onclick="editDraft()">Edit</button>
+        <button class="btn btn-confirm" id="confirmBtn" onclick="confirmDraft()">✅ Confirm &amp; reserve stock</button>
+      </div>
+    </div>
+    <div class="footer-note">This calls a real Claude-powered endpoint — nothing here is scripted or pre-recorded.</div>
+  </div>
+
+</div>
+
+<script>
+const PRESETS = [
+  { label: "New order", text: "Hi, this is Golden Dragon Restaurant — need 12kg chicken boneless leg, deliver tomorrow please" },
+  { label: "Same-day request", text: "It's already afternoon but could we get that order delivered today instead?" },
+  { label: "Add-on", text: "Can you add 5kg lamb rack to my order too" },
+  { label: "Qty change", text: "Actually change the chicken boneless leg to 16kg instead of 12kg" },
+  { label: "Cancel item", text: "Please remove the lamb rack from the order" },
+  { label: "Cancel whole order", text: "Sorry, please cancel the whole order" },
+];
+
+let currentDraft = null;
+let isLoading = false;
+
+function renderChips() {
+  const box = document.getElementById('waChips');
+  box.innerHTML = PRESETS.map((p, i) => `<div class="wa-chip" onclick="sendPreset(${i})">${p.label}</div>`).join('');
+}
+renderChips();
+
+function addBubble(role, text) {
+  const thread = document.getElementById('waThread');
+  const div = document.createElement('div');
+  div.className = `wa-bubble ${role === 'customer' ? 'wa-in' : 'wa-out'}`;
+  const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  div.innerHTML = `${escapeHtml(text)}<div class="wa-time">${now}</div>`;
+  thread.appendChild(div);
+  thread.scrollTop = thread.scrollHeight;
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+function sendPreset(i) {
+  document.getElementById('waInput').value = PRESETS[i].text;
+  sendMessage();
+}
+
+async function sendMessage() {
+  if (isLoading) return;
+  const inp = document.getElementById('waInput');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+  addBubble('customer', text);
+  setAiLine('Reading the message…', true);
+  isLoading = true;
+
+  try {
+    const res = await fetch('/api/whatsapp-chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, currentDraft }),
+    });
+    if (!res.ok) {
+      const e = await res.json();
+      throw new Error(e.error || `API error ${res.status}`);
+    }
+    const data = await res.json();
+    setAiLine(data.reply || 'Drafted.', false);
+    if (data.draft) {
+      currentDraft = data.draft;
+      renderDraft(currentDraft);
+    }
+  } catch (err) {
+    setAiLine(`⚠ Connection error: ${err.message}`, false);
+  }
+  isLoading = false;
+}
+
+function setAiLine(text, placeholder) {
+  const el = document.getElementById('aiLine');
+  el.textContent = text;
+  el.classList.toggle('placeholder', !!placeholder);
+}
+
+function renderDraft(d) {
+  document.getElementById('draftEmpty').style.display = 'none';
+  document.getElementById('draftContent').style.display = 'block';
+  document.getElementById('actionsRow').style.display = 'flex';
+
+  document.getElementById('soTitle').textContent = d.customer ? `Draft SO — ${d.customer}` : 'Draft SO — customer unclear';
+  document.getElementById('fCustomer').textContent = d.customer || '— needs review —';
+  document.getElementById('fDate').textContent = d.delivery_date || '—';
+  document.getElementById('fIntent').textContent = (d.intent || '—').replace('_', ' ');
+  const confPct = Math.round((d.confidence || 0) * 100);
+  document.getElementById('fConf').textContent = confPct + '%';
+  document.getElementById('fConfBar').style.width = confPct + '%';
+
+  const tbody = document.getElementById('itemsBody');
+  tbody.innerHTML = (d.items || []).map(it => `
+    <tr class="${it.status === 'cancelled' ? 'cancelled' : ''}">
+      <td>${escapeHtml(it.name || it.sku || '—')}</td>
+      <td>${it.qty ?? '—'}</td>
+      <td>${escapeHtml(it.unit || '—')}</td>
+      <td>${it.status === 'cancelled' ? 'Cancelled' : 'Pending'}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="4" style="color:#9AA6AC;text-align:center;padding:14px 0;">No items</td></tr>';
+
+  const flags = [];
+  if (d.needs_review) flags.push('<span class="flag flag-review">⚠ Needs review</span>');
+  if (d.needs_management_approval) flags.push('<span class="flag flag-approval">⛔ Management approval required</span>');
+  if (d.same_day_requested) flags.push('<span class="flag flag-sameday">⏱ Same-day requested — ops can override</span>');
+  document.getElementById('flagsRow').innerHTML = flags.join(' ');
+
+  const noteRow = document.getElementById('noteRow');
+  if (d.notes) { noteRow.style.display = 'block'; noteRow.textContent = 'Ops note: ' + d.notes; }
+  else { noteRow.style.display = 'none'; }
+
+  const badge = document.getElementById('statusBadge');
+  const confirmBtn = document.getElementById('confirmBtn');
+  if (d.needs_management_approval) {
+    badge.className = 'status-badge status-approval'; badge.textContent = 'Needs manager approval';
+    confirmBtn.disabled = true; confirmBtn.textContent = '⛔ Awaiting manager approval';
+  } else if (d.needs_review) {
+    badge.className = 'status-badge status-review'; badge.textContent = 'Needs review';
+    confirmBtn.disabled = false; confirmBtn.textContent = '✅ Confirm & reserve stock';
+  } else {
+    badge.className = 'status-badge status-draft'; badge.textContent = 'Draft — awaiting confirmation';
+    confirmBtn.disabled = false; confirmBtn.textContent = '✅ Confirm & reserve stock';
+  }
+}
+
+function confirmDraft() {
+  const badge = document.getElementById('statusBadge');
+  badge.className = 'status-badge status-confirmed';
+  badge.textContent = 'Confirmed — stock reserved';
+  document.getElementById('confirmBtn').disabled = true;
+  document.getElementById('confirmBtn').textContent = '✅ Confirmed';
+  addBubble('system', '✅ Order confirmed internally — delivery scheduled.');
+}
+
+function editDraft() {
+  setAiLine('Edit mode — in the real system this opens the draft SO in Odoo for manual adjustment.', false);
+}
+
+function resetDemo() {
+  currentDraft = null;
+  document.getElementById('waThread').innerHTML = '';
+  document.getElementById('draftEmpty').style.display = 'block';
+  document.getElementById('draftContent').style.display = 'none';
+  document.getElementById('actionsRow').style.display = 'none';
+  document.getElementById('soTitle').textContent = 'No active draft';
+  document.getElementById('statusBadge').className = 'status-badge status-empty';
+  document.getElementById('statusBadge').textContent = 'No draft';
+  setAiLine('Send a WhatsApp message on the left — the AI will read it and draft a Sales Order here.', true);
+}
+</script>
+
+</body>
+</html>

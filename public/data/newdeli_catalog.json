@@ -1,0 +1,20 @@
+{
+  "_meta": {
+    "note": "Synthetic demo data for New Deli Food Trading WhatsApp AI concept demo. No real customer or transaction data.",
+    "generatedFor": "New Deli Food Trading — QO-2026-026-R2 AI demo"
+  },
+  "products": [
+    { "sku": "BFSHK-CTN", "name": "Beef Shank Full Carton", "uom": ["carton"], "notes": "1 carton = 30kg" },
+    { "sku": "BFSHK-LOOSE", "name": "Beef Shank Loose", "uom": ["kg"], "notes": "Break-bulk from BFSHK-CTN" },
+    { "sku": "CHKN-BL", "name": "Chicken Boneless Leg", "uom": ["kg"] },
+    { "sku": "CHKN-WING", "name": "Chicken Mid-Joint Wing", "uom": ["kg", "carton"] },
+    { "sku": "LAMB-RACK", "name": "Lamb Rack", "uom": ["kg"] },
+    { "sku": "PORK-BELLY", "name": "Pork Belly Skin-on", "uom": ["kg", "carton"] }
+  ],
+  "customers": [
+    { "id": "C-101", "name": "Golden Dragon Restaurant" },
+    { "id": "C-102", "name": "Sunrise Catering Pte Ltd" },
+    { "id": "C-103", "name": "Marina Bay F&B Holdings" },
+    { "id": "C-104", "name": "Tiong Bahru Wet Market Stall 12" }
+  ]
+}
